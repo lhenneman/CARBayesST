@@ -1,4 +1,4 @@
-poisson.CARlinear <- function(formula, data=NULL, W, burnin, n.sample, thin=1,  prior.mean.beta=NULL, prior.var.beta=NULL, prior.mean.alpha=NULL, prior.var.alpha=NULL, prior.tau2=NULL, rho.slo=NULL, rho.int=NULL, MALA=FALSE, verbose=TRUE)
+poisson.CARlinear <- function(formula, data=NULL, W.quants, burnin, n.sample, thin=1,  prior.mean.beta=NULL, prior.var.beta=NULL, prior.mean.alpha=NULL, prior.var.alpha=NULL, prior.tau2=NULL, rho.slo=NULL, rho.int=NULL, MALA=FALSE, verbose=TRUE, Wstar.eigen = NULL)
 {
 #### Verbose
 a <- common.verbose(verbose)  
@@ -19,11 +19,13 @@ which.miss <- frame.results$which.miss
 n.miss <- frame.results$n.miss  
 Y.DA <- Y  
 
+print( paste( "Frame object section at", round(proc.time()[3]-a[3], 1)))
 
 #### Check on MALA argument
     if(length(MALA)!=1) stop("MALA is not length 1.", call.=FALSE)
     if(!is.logical(MALA)) stop("MALA is not logical.", call.=FALSE) 
 
+print( paste( "Check MALA section at", round(proc.time()[3]-a[3], 1)))
 
 #### Check on the rho arguments
     if(is.null(rho.int))
@@ -52,9 +54,11 @@ Y.DA <- Y
     if(lambda<0 ) stop("rho.slo is outside the range [0, 1].", call.=FALSE)  
     if(lambda>1 ) stop("rho.slo is outside the range [0, 1].", call.=FALSE)  
 
+print( paste( "Check rho section at", round(proc.time()[3]-a[3], 1)))
 
 #### CAR quantities
-W.quants <- common.Wcheckformat.leroux(W)
+#W.quants <- common.Wcheckformat.leroux(W)
+W <- W.quants$W
 K <- W.quants$n
 N <- N.all / K
 W <- W.quants$W
@@ -64,6 +68,7 @@ W.triplet.sum <- W.quants$W.triplet.sum
 n.neighbours <- W.quants$n.neighbours 
 W.begfin <- W.quants$W.begfin
 
+print( paste( "CAR quantities section at", round(proc.time()[3]-a[3], 1)))
 
 #### Priors
     if(is.null(prior.mean.beta)) prior.mean.beta <- rep(0, p)
@@ -81,6 +86,7 @@ prior.var.check(prior.tau2)
     if(sum(is.na(prior.var.alpha))!=0) stop("the  prior variance for alpha has missing values.", call.=FALSE)    
     if(min(prior.var.alpha) <=0) stop("the prior variance for alpha has elements less than zero", call.=FALSE)
 
+print( paste( "Priors section at", round(proc.time()[3]-a[3], 1)))
 
 #### Compute the blocking structure for beta     
 block.temp <- common.betablock(p)
@@ -94,10 +100,12 @@ list.block <- as.list(rep(NA, n.beta.block*2))
     list.block[[r+n.beta.block]] <- length(list.block[[r]])
     }
 
+print( paste( "Compute blocking structure for beta section at", round(proc.time()[3]-a[3], 1)))
 
 #### MCMC quantities - burnin, n.sample, thin
 common.burnin.nsample.thin.check(burnin, n.sample, thin)
 
+print( paste( "MCMC quantities section at", round(proc.time()[3]-a[3], 1)))
 
 
 #############################
@@ -121,6 +129,7 @@ delta <- rnorm(n=K, mean=0, sd = res.sd)
 tau2.phi <- var(phi)/10
 tau2.delta <- var(delta)/10
 
+print( paste( "Initial parameter values section at", round(proc.time()[3]-a[3], 1)))
 
 #### Specify matrix quantities
 offset.mat <- matrix(offset, nrow=K, ncol=N, byrow=FALSE) 
@@ -131,6 +140,7 @@ phi.mat <- matrix(rep(phi, N), byrow=F, nrow=K)
 lp <- as.numeric(offset.mat + regression.mat + phi.mat + delta.time.mat + alpha * time.mat)
 fitted <- exp(lp)
 
+print( paste( "Specify matrix quantities section at", round(proc.time()[3]-a[3], 1)))
 
 ###############################    
 #### Set up the MCMC quantities    
@@ -149,7 +159,8 @@ samples.fitted <- array(NA, c(n.keep, N.all))
 samples.loglike <- array(NA, c(n.keep, N.all))
     if(n.miss>0) samples.Y <- array(NA, c(n.keep, n.miss))
 
-    
+print( paste( "Set up MCMC quantities section at", round(proc.time()[3]-a[3], 1)))
+
 #### Specify the Metropolis quantities
 accept.all <- rep(0,12)
 accept <- accept.all
@@ -164,7 +175,8 @@ chol.proposal.corr.beta <- chol(proposal.corr.beta)
 tau2.phi.shape <- prior.tau2[1] + K/2
 tau2.delta.shape <- prior.tau2[1] + K/2
     
-    
+print( paste( "Specify Metropolis quantities section at", round(proc.time()[3]-a[3], 1)))
+
 
 ##############################
 #### Specify spatial quantites
@@ -172,14 +184,17 @@ tau2.delta.shape <- prior.tau2[1] + K/2
 #### Create the determinant     
     if(!fix.rho.int | !fix.rho.slo) 
     {
-    Wstar <- diag(apply(W,1,sum)) - W
-    Wstar.eigen <- eigen(Wstar)
+        if( is.null( Wstar.eigen)){
+            Wstar <- diag(apply(W,1,sum)) - W
+            Wstar.eigen <- eigen(Wstar)
+        }
     Wstar.val <- Wstar.eigen$values
     }else
     {}
     if(!fix.rho.int) det.Q.rho <-  0.5 * sum(log((rho * Wstar.val + (1-rho))))    
     if(!fix.rho.slo) det.Q.lambda <-  0.5 * sum(log((lambda * Wstar.val + (1-lambda))))     
 
+print( paste( "Create the determinant section at", round(proc.time()[3]-a[3], 1)))
 
 #### Check for islands
 W.list<- mat2listw(W)
@@ -190,6 +205,7 @@ n.islands <- max(W.islands$nc)
     if(rho==1) tau2.phi.shape <- prior.tau2[1] + 0.5 * (K-n.islands)   
     if(lambda==1) tau2.delta.shape <- prior.tau2[1] + 0.5 * (K-n.islands)     
 
+print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1)))
 
 
 ###########################
