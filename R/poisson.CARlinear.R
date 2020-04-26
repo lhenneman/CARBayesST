@@ -19,13 +19,15 @@ which.miss <- frame.results$which.miss
 n.miss <- frame.results$n.miss  
 Y.DA <- Y  
 
+rm( frame.results)
 print( paste( "Frame object section at", round(proc.time()[3]-a[3], 1)))
 
 #### Check on MALA argument
     if(length(MALA)!=1) stop("MALA is not length 1.", call.=FALSE)
     if(!is.logical(MALA)) stop("MALA is not logical.", call.=FALSE) 
 
-print( paste( "Check MALA section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Check MALA section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Check on the rho arguments
     if(is.null(rho.int))
@@ -54,7 +56,8 @@ print( paste( "Check MALA section at", round(proc.time()[3]-a[3], 1)))
     if(lambda<0 ) stop("rho.slo is outside the range [0, 1].", call.=FALSE)  
     if(lambda>1 ) stop("rho.slo is outside the range [0, 1].", call.=FALSE)  
 
-print( paste( "Check rho section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Check rho section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### CAR quantities
 #W.quants <- common.Wcheckformat.leroux(W)
@@ -117,7 +120,7 @@ print( paste( "MCMC quantities section at", round(proc.time()[3]-a[3], 1),
 #############################
 time <-(1:N - mean(1:N))/N
 time.all <- kronecker(time, rep(1,K))
-mod.glm <- glm(Y~X.standardised-1 + time.all, offset=offset, family="quasipoisson")
+mod.glm <- glm(Y~X.standardised-1 + time.all, offset=offset, family="quasipoisson", model = F, x = F, y = F)
 beta.mean <- mod.glm$coefficients
 beta.sd <- sqrt(diag(summary(mod.glm)$cov.scaled))
 temp <- rnorm(n=length(beta.mean), mean=beta.mean, sd=beta.sd)
@@ -486,7 +489,7 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
 #### clean house
 biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
 print( biggest_objects)
-rm( W)
+rm( W, mod.glm, W.quants, )
 
 
 ###################################
