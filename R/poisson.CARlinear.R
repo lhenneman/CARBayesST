@@ -489,9 +489,11 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
 #### clean house
 print( paste( 'mem_used() before trimming is', pryr::mem_used()))
 biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
-print( biggest_objects)
+print( tail( biggest_objects))
 rm( W, mod.glm, W.quants)
+biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
 print( paste( 'mem_used() after trimming is', pryr::mem_used()))
+print( tail( biggest_objects))
 
 
 ###################################
