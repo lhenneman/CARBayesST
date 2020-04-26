@@ -68,7 +68,8 @@ W.triplet.sum <- W.quants$W.triplet.sum
 n.neighbours <- W.quants$n.neighbours 
 W.begfin <- W.quants$W.begfin
 
-print( paste( "CAR quantities section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "CAR quantities section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Priors
     if(is.null(prior.mean.beta)) prior.mean.beta <- rep(0, p)
@@ -86,7 +87,8 @@ prior.var.check(prior.tau2)
     if(sum(is.na(prior.var.alpha))!=0) stop("the  prior variance for alpha has missing values.", call.=FALSE)    
     if(min(prior.var.alpha) <=0) stop("the prior variance for alpha has elements less than zero", call.=FALSE)
 
-print( paste( "Priors section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Priors section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Compute the blocking structure for beta     
 block.temp <- common.betablock(p)
@@ -100,12 +102,14 @@ list.block <- as.list(rep(NA, n.beta.block*2))
     list.block[[r+n.beta.block]] <- length(list.block[[r]])
     }
 
-print( paste( "Compute blocking structure for beta section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Compute blocking structure for beta section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### MCMC quantities - burnin, n.sample, thin
 common.burnin.nsample.thin.check(burnin, n.sample, thin)
 
-print( paste( "MCMC quantities section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "MCMC quantities section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 
 #############################
@@ -129,7 +133,8 @@ delta <- rnorm(n=K, mean=0, sd = res.sd)
 tau2.phi <- var(phi)/10
 tau2.delta <- var(delta)/10
 
-print( paste( "Initial parameter values section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Initial parameter values section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Specify matrix quantities
 offset.mat <- matrix(offset, nrow=K, ncol=N, byrow=FALSE) 
@@ -140,7 +145,8 @@ phi.mat <- matrix(rep(phi, N), byrow=F, nrow=K)
 lp <- as.numeric(offset.mat + regression.mat + phi.mat + delta.time.mat + alpha * time.mat)
 fitted <- exp(lp)
 
-print( paste( "Specify matrix quantities section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Specify matrix quantities section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 ###############################    
 #### Set up the MCMC quantities    
@@ -159,7 +165,8 @@ samples.fitted <- array(NA, c(n.keep, N.all))
 samples.loglike <- array(NA, c(n.keep, N.all))
     if(n.miss>0) samples.Y <- array(NA, c(n.keep, n.miss))
 
-print( paste( "Set up MCMC quantities section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Set up MCMC quantities section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Specify the Metropolis quantities
 accept.all <- rep(0,12)
@@ -175,7 +182,8 @@ chol.proposal.corr.beta <- chol(proposal.corr.beta)
 tau2.phi.shape <- prior.tau2[1] + K/2
 tau2.delta.shape <- prior.tau2[1] + K/2
     
-print( paste( "Specify Metropolis quantities section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Specify Metropolis quantities section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 
 ##############################
@@ -194,7 +202,8 @@ print( paste( "Specify Metropolis quantities section at", round(proc.time()[3]-a
     if(!fix.rho.int) det.Q.rho <-  0.5 * sum(log((rho * Wstar.val + (1-rho))))    
     if(!fix.rho.slo) det.Q.lambda <-  0.5 * sum(log((lambda * Wstar.val + (1-lambda))))     
 
-print( paste( "Create the determinant section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Create the determinant section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 #### Check for islands
 W.list<- mat2listw(W)
@@ -205,7 +214,8 @@ n.islands <- max(W.islands$nc)
     if(rho==1) tau2.phi.shape <- prior.tau2[1] + 0.5 * (K-n.islands)   
     if(lambda==1) tau2.delta.shape <- prior.tau2[1] + 0.5 * (K-n.islands)     
 
-print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1)))
+print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
+              "and mem_used() is", pryr::mem_used()))
 
 
 ###########################
@@ -473,6 +483,10 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1)))
     }else
     {}
 
+#### clean house
+biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
+print( biggest_objects)
+rm( W)
 
 
 ###################################
