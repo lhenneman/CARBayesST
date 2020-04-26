@@ -487,9 +487,11 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
     {}
 
 #### clean house
+print( 'mem_used() before trimming is', pryr::mem_used())
 biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
 print( biggest_objects)
-rm( W, mod.glm, W.quants, )
+rm( W, mod.glm, W.quants)
+print( 'mem_used() after trimming is', pryr::mem_used())
 
 
 ###################################
@@ -517,6 +519,7 @@ accept.delta <- 100 * accept.all[7] / accept.all[8]
 accept.final <- c(accept.beta, accept.alpha, accept.phi, accept.delta, accept.rho, accept.lambda)
 names(accept.final) <- c("beta", "alpha", "phi", "delta", "rho.int", "rho.slo")
    
+print( 'mem_used() after computing acceptance rates is', pryr::mem_used())
 
 #### Compute the fitted deviance
 mean.phi <- apply(samples.phi, 2, mean)
@@ -530,10 +533,12 @@ lp.mean <- offset.mat + regression.mat + mean.phi.mat + delta.time.mat + mean.al
 fitted.mean <- exp(lp.mean)
 deviance.fitted <- -2 * sum(dpois(x=as.numeric(Y), lambda=fitted.mean, log=TRUE), na.rm=TRUE)
 
-   
+print( 'mem_used() after computing the fitted deviance is', pryr::mem_used())
+
 #### Model fit criteria
 modelfit <- common.modelfit(samples.loglike, deviance.fitted)
 
+print( 'mem_used() after model fit criteria is', pryr::mem_used())
 
 #### Create the fitted values and residuals
 fitted.values <- apply(samples.fitted, 2, mean)
@@ -541,10 +546,12 @@ response.residuals <- as.numeric(Y) - fitted.values
 pearson.residuals <- response.residuals /sqrt(fitted.values)
 residuals <- data.frame(response=response.residuals, pearson=pearson.residuals)
     
+print( 'mem_used() after creating fitted values and residuals is', pryr::mem_used())
 
 #### Transform the parameters back to the origianl covariate scale.
 samples.beta.orig <- common.betatransform(samples.beta, X.indicator, X.mean, X.sd, p, FALSE)  
 
+print( 'mem_used() after transforming parameters back to original scale is', pryr::mem_used())
 
 #### Create a summary object
 samples.beta.orig <- mcmc(samples.beta.orig)
@@ -585,7 +592,8 @@ summary.results <- rbind(summary.beta, summary.hyper)
 summary.results[ , 1:3] <- round(summary.results[ , 1:3], 4)
 summary.results[ , 4:7] <- round(summary.results[ , 4:7], 1)
     
-    
+print( 'mem_used() after creating summary object is', pryr::mem_used())
+
 ## Compile and return the results
 #### Harmonise samples in case of them not being generated
     if(fix.rho.int & fix.rho.slo)
@@ -610,6 +618,8 @@ samples <- list(beta=mcmc(samples.beta.orig), alpha=mcmc(samples.alpha), phi=mcm
 model.string <- c("Likelihood model - Poisson (log link function)", "\nLatent structure model - Spatially autocorrelated linear time trends\n")
 results <- list(summary.results=summary.results, samples=samples, fitted.values=fitted.values, residuals=residuals,  modelfit=modelfit, accept=accept.final, localised.structure=NULL, formula=formula, model=model.string,  X=X)
 class(results) <- "CARBayesST"
+
+print( 'mem_used() after compiling results is', pryr::mem_used())
 
 #### Finish by stating the time taken 
     if(verbose)
