@@ -64,7 +64,6 @@ print( paste( "Check rho section at", round(proc.time()[3]-a[3], 1),
 W <- W.quants$W
 K <- W.quants$n
 N <- N.all / K
-W <- W.quants$W
 W.triplet <- W.quants$W.triplet
 W.n.triplet <- W.quants$n.triplet
 W.triplet.sum <- W.quants$W.triplet.sum
@@ -272,8 +271,9 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
     accept[2] <- accept[2] + n.beta.block  
     regression.mat <- matrix(X.standardised %*% beta, nrow=K, ncol=N, byrow=FALSE)  
         
-    print( paste( 'beta is', beta))
-    print( cat( 'offset.temp is', offset.temp[1:5]))
+    # print( paste( 'beta is', beta))
+    print( temp)
+    # print( cat( 'offset.temp is', offset.temp[1:5]))
     
     ####################
     ## Sample from alpha
