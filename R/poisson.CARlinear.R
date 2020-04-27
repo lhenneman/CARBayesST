@@ -127,6 +127,11 @@ temp <- rnorm(n=length(beta.mean), mean=beta.mean, sd=beta.sd)
 beta <- temp[1:p]
 alpha <- temp[(p+1)]
 
+print( paste( 'temp:', temp))
+print( paste( 'beta:', beta))
+print( paste( 'beta.mean:', beta.mean))
+print( paste( 'beta.sd:', beta.sd))
+
 log.Y <- log(Y)
 log.Y[Y==0] <- -0.1  
 res.temp <- log.Y - as.numeric(X.standardised %*% beta) - time.all * alpha - offset
