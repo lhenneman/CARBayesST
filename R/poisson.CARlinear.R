@@ -268,7 +268,8 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
     regression.mat <- matrix(X.standardised %*% beta, nrow=K, ncol=N, byrow=FALSE)  
         
     print( paste( 'beta is', beta))
-
+    print( paste( 'offset.temp is', offset.temp))
+    
     ####################
     ## Sample from alpha
     ####################
