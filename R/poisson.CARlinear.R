@@ -417,7 +417,7 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
         }else
         {}
         
-        
+        print( paste( 'accept:', accept))
     
     #########################
     ## Calculate the deviance
