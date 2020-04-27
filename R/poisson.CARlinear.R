@@ -119,7 +119,7 @@ print( paste( "MCMC quantities section at", round(proc.time()[3]-a[3], 1),
 #############################
 time <-(1:N - mean(1:N))/N
 time.all <- kronecker(time, rep(1,K))
-mod.glm <- glm(Y~X.standardised-1 + time.all, offset=offset, family="quasipoisson", model = F, x = F, y = F)
+mod.glm <- glm(Y~X.standardised-1 + time.all, offset=offset, family="quasipoisson")#, model = F, x = F, y = F)
 beta.mean <- mod.glm$coefficients
 beta.sd <- sqrt(diag(summary(mod.glm)$cov.scaled))
 temp <- rnorm(n=length(beta.mean), mean=beta.mean, sd=beta.sd)
