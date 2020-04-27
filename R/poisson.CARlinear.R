@@ -267,7 +267,7 @@ print( paste( "Check for islands section at", round(proc.time()[3]-a[3], 1),
     accept[2] <- accept[2] + n.beta.block  
     regression.mat <- matrix(X.standardised %*% beta, nrow=K, ncol=N, byrow=FALSE)  
         
-        
+    print( paste( 'beta is', beta))
 
     ####################
     ## Sample from alpha
