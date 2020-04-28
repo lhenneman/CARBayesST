@@ -539,6 +539,8 @@ fitted.mean <- exp(lp.mean)
 deviance.fitted <- -2 * sum(dpois(x=as.numeric(Y), lambda=fitted.mean, log=TRUE), na.rm=TRUE)
 
 print( paste( 'mem_used() after computing the fitted deviance is', pryr::mem_used()))
+biggest_objects <- sort( sapply(ls(),function(x){pryr::object_size(get(x))})) 
+print( tail( biggest_objects))
 
 #### Model fit criteria
 modelfit <- common.modelfit(samples.loglike, deviance.fitted)
